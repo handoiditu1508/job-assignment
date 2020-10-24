@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 
 namespace Assignment
 {
@@ -15,7 +14,8 @@ namespace Assignment
 			string fileName = "test3.txt";
 
 			int n, m;
-			int[][] data, cal, assignment;
+			List<int>[] data;
+			int[][] cal, assignment;
 			Pair[][] trace;
 
 			StreamReader file = new StreamReader(Path.Combine(filePath, fileName));
@@ -23,23 +23,21 @@ namespace Assignment
 			n = int.Parse(temp[0]);
 			m = int.Parse(temp[1]);
 
-			data = new int[m+1][];
+			data = new List<int>[m+1];
 			cal = new int[m+1][];
 			assignment = new int[m+1][];
 			trace = new Pair[m+1][];
 			trace[0] = Enumerable.Repeat(new Pair(0, 0), n+1).ToArray();
 
-			data[0] = Enumerable.Repeat(0, n + 1).ToArray();
+			data[0] = Enumerable.Repeat(0, n + 1).ToList();
 			cal[0] = Enumerable.Repeat(int.MaxValue, n + 1).ToArray();
 			cal[0][0] = 0;
 
 			for(int i = 1; i <= m; i++)
 			{
 				string row = file.ReadLine();
-				data[i] = Array.ConvertAll<string, int>(row.Split(' '), s => int.Parse(s));
-				data[i] = data[i].Reverse().ToArray();
-				Array.Resize(ref data[i], n + 1);
-				data[i] = data[i].Reverse().ToArray();
+				data[i] = row.Split(' ').Select(s => int.Parse(s)).ToList();
+				data[i].Insert(0, 0);
 
 				cal[i] = new int[n + 1];
 				trace[i] = new Pair[n+1];
@@ -91,20 +89,17 @@ namespace Assignment
 			}
 			file.Close();
 			
-			Stack<int> traceBack = new Stack<int>();
+			string traceBack = "";
 			Pair position = new Pair(m, n);
 			int[] time = Enumerable.Repeat(0, m+1).ToArray();
 			while(position.X != 0 && position.Y != 0)
 			{
-				traceBack.Push(assignment[position.X][position.Y]);
+				traceBack = assignment[position.X][position.Y].ToString() + " " + traceBack;
 				time[assignment[position.X][position.Y]] += data[assignment[position.X][position.Y]][position.Y];
 				position = trace[position.X][position.Y];
 			}
-			while(traceBack.Any())
-			{
-				Console.Write($"{traceBack.Pop()} ");
-			}
-			Console.WriteLine();
+			traceBack = traceBack.Substring(0, traceBack.Length-1);
+			Console.WriteLine(traceBack);
 			Console.WriteLine($"Time to finish: {time.Max()}");
 		}
 	}
